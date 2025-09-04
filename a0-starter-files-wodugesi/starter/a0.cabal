@@ -1,0 +1,30 @@
+cabal-version:      3.0
+name:               a0
+version:            0.1.0.0
+build-type:         Simple
+
+common warnings
+    ghc-options: -Wall
+
+library basics
+  import:             warnings
+  exposed-modules:
+      Basics
+  hs-source-dirs:     .
+  build-depends:      base ^>=4.20.1.0,
+                      mtl
+  default-language: GHC2024
+
+test-suite basics-tests
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          BasicsTests.hs
+    build-depends:    base ^>=4.20.1.0,
+                      basics,
+                      tasty ^>=1.4.3,
+                      tasty-quickcheck ^>=0.10.2,
+                      tasty-hunit ^>=0.10.0.3
+    hs-source-dirs:   test
+    default-language: GHC2024
+    build-tool-depends:
+      tasty-discover:tasty-discover
