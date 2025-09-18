@@ -1,0 +1,80 @@
+cabal-version:      3.0
+name:               a1
+version:            0.1.0.0
+build-type:         Simple
+
+common warnings
+    ghc-options: -Wall
+
+library evaluator
+  import:           warnings
+  exposed-modules:
+      SmallStep
+      BigStep
+      Term
+  hs-source-dirs:
+      .
+  build-depends:    containers >=0.6.4.1,
+                    base >=4.15.1.0,
+                    mtl
+  default-language: Haskell2010
+
+library recursion-and-datatypes
+  import:           warnings
+  exposed-modules:
+      RecursionAndDatatypes
+  hs-source-dirs:
+      .
+  build-depends:    containers >=0.6.4.1,
+                    base >=4.15.1.0,
+                    mtl
+  default-language: Haskell2010
+
+test-suite small-step-tests
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          SmallStepTests.hs
+    build-depends:    base >=4.15.1.0,
+                      evaluator,
+                      tasty >=1.4.2.3,
+                      tasty-hunit >=0.10.0.3,
+                      tasty-quickcheck >=0.10.2,
+    hs-source-dirs:   test
+    default-language: Haskell2010
+
+test-suite multi-step-tests
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          MultiStepTests.hs
+    build-depends:    base >=4.15.1.0,
+                      evaluator,
+                      tasty >=1.4.2.3,
+                      tasty-hunit >=0.10.0.3,
+                      tasty-quickcheck >=0.10.2,
+    hs-source-dirs:   test
+    default-language: Haskell2010
+
+test-suite big-step-tests
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          BigStepTests.hs
+    build-depends:    base >=4.15.1.0,
+                      evaluator,
+                      tasty >=1.4.2.3,
+                      tasty-hunit >=0.10.0.3,
+                      tasty-quickcheck >=0.10.2,
+    hs-source-dirs:   test
+    default-language: Haskell2010
+
+test-suite recursion-and-datatypes-tests
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          RecursionAndDatatypesTests.hs
+    build-depends:    base >=4.15.1.0,
+                      recursion-and-datatypes,
+                      tasty >=1.4.2.3,
+                      tasty-hunit >=0.10.0.3,
+                      tasty-quickcheck >=0.10.2,
+                      containers >=0.6.4.1,
+    hs-source-dirs:   test
+    default-language: Haskell2010
