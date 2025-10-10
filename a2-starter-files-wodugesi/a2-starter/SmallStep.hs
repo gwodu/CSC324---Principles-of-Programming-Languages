@@ -63,7 +63,23 @@ oneStep (TmIsZero t) =                                   -- E-IsZero
                                 ++ show t ++ "\n"
                                 ++ msg)
 
-oneStep t = error "Implement missing evalaution rules"
+-- E-AppAbs
+oneStep (TmApp (TmAbs t12) v2)
+  | isVal v2 = StepOk (shifting (-1) 0 (subst 0 (shifting 1 0 v2) t12))
+
+-- E-App2
+oneStep (TmApp v1 t2)
+  | isVal v1 = case oneStep t2 of
+                  StepOk t2' -> StepOk (TmApp v1 t2')
+                  StepError msg -> StepError ("The argument cannot be stepped: " ++ show t2 ++ "\n" ++ msg)
+
+-- E-app1
+oneStep (TmApp t1 t2) =
+  case oneStep t1 of
+    StepOk t1' -> StepOk (TmApp t1' t2)
+    StepError msg -> StepError ("The function cannot be stepped: "
+                                ++ show t1 ++ "\n"
+                                ++ msg)
 
 oneStep t = StepError ("No applicable evaluation rule for: " ++ show t)
 
