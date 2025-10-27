@@ -1,0 +1,112 @@
+module SmallStep where
+
+import Term
+import DeBruijn
+
+type ErrorMessage = String
+
+data StepResult
+  = StepOk Term
+  | StepError ErrorMessage
+  deriving (Eq, Show)
+
+isVal :: Term -> Bool
+isVal t = isBoolVal t
+          || isNumVal t
+          || isLambdaForm t
+          || isRecordVal t
+          || isPairVal t
+          || isSumVal t
+
+isBoolVal :: Term -> Bool
+isBoolVal TmTrue = True
+isBoolVal TmFalse = True
+isBoolVal _ = False
+
+isNumVal :: Term -> Bool
+isNumVal TmZero = True
+isNumVal (TmSucc t) = isNumVal t
+isNumVal _ = False
+
+isLambdaForm :: Term -> Bool
+isLambdaForm (TmAnnAbs _ _) = True
+isLambdaForm _ = False
+
+isRecordVal :: Term -> Bool
+isRecordVal (TmRecord pairs) = all (isVal . snd) pairs
+isRecordVal _ = False
+
+isPairVal :: Term -> Bool
+isPairVal (TmPair t1 t2) = isVal t1 && isVal t2
+isPairVal _ = False
+
+isSumVal :: Term -> Bool
+isSumVal (TmInl t _) = isVal t
+isSumVal (TmInr t _) = isVal t
+isSumVal _ = False
+
+
+oneStep :: Term -> StepResult
+oneStep (TmIf TmTrue t1 _) = StepOk t1                   -- E-IfTrue
+oneStep (TmIf TmFalse _ t2) = StepOk t2                  -- E-IfFalse
+oneStep (TmIf t t1 t2) =                                 -- E-If
+  case oneStep t of
+    StepOk t' -> StepOk (TmIf t' t1 t2)
+    StepError msg -> StepError ("The condition cannot be stepped: "
+                                ++ show t ++ "\n"
+                                ++ msg)
+oneStep (TmSucc t) =                                     -- E-Succ
+  case oneStep t of
+    StepOk t' -> StepOk (TmSucc t')
+    StepError msg -> StepError ("The argument cannot be stepped: "
+                                ++ show t ++ "\n"
+                                ++ msg)
+oneStep (TmPred TmZero) = StepOk TmZero                  -- E-PredZero
+oneStep (TmPred (TmSucc t))                              -- E-PredSucc
+  | isNumVal t = StepOk t
+oneStep (TmPred t) =                                     -- E-Pred
+  case oneStep t of
+    StepOk t' -> StepOk (TmPred t')
+    StepError msg -> StepError ("The argument cannot be stepped: "
+                                ++ show t ++ "\n"
+                                ++ msg)
+oneStep (TmIsZero TmZero) = StepOk TmTrue                -- E-IsZeroZero
+oneStep (TmIsZero (TmSucc t))                            -- E-IsZeroSucc
+  | isNumVal t = StepOk TmFalse
+oneStep (TmIsZero t) =                                   -- E-IsZero
+  case oneStep t of
+    StepOk t' -> StepOk (TmIsZero t')
+    StepError msg -> StepError ("The argument cannot be stepped: "
+                                ++ show t ++ "\n"
+                                ++ msg)
+oneStep (TmApp (TmAnnAbs ty t1) t2)                      -- E-AppAbs
+  | isVal t2 = StepOk (shifting (-1) 0
+                       (subst 0 (shifting 1 0 t2) t1))
+oneStep (TmApp t1 t2)
+  | isVal t1 =                                           -- E-App2
+    case oneStep t2 of
+      StepOk t2' -> StepOk (TmApp t1 t2')
+      StepError msg -> StepError ("The RHS cannot be stepped: "
+                                  ++ show t2 ++ "\n"
+                                  ++ msg)
+  | otherwise =
+    case oneStep t1 of
+      StepOk t1' -> StepOk (TmApp t1' t2)                -- E-App1
+      StepError msg -> StepError ("The LHS cannot be stepped: "
+                                  ++ show t1 ++ "\n"
+                                  ++ msg)
+
+{- TODO for A3: Implement the following evaluation rules here
+- Records: E-ProjRcd, E-Proj, E-Rcd
+- Pairs: E-PairBeta1, E-PairBeta2, E-Proj1, E-Proj2, E-Pair1, E-Pair2
+- Sums: E-CaseInl, E-CaseInr, E-Case, E-Inl, E-Inr
+-}
+
+oneStep t = StepError ("No applicable evaluation rule for: " ++ show t)
+
+multiStep :: Term -> Term
+multiStep t = if isVal t
+              then t
+              else case oneStep t of
+                     StepOk t' -> multiStep t'
+                     StepError _ -> t
