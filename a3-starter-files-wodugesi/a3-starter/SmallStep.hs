@@ -96,11 +96,54 @@ oneStep (TmApp t1 t2)
                                   ++ show t1 ++ "\n"
                                   ++ msg)
 
-{- TODO for A3: Implement the following evaluation rules here
-- Records: E-ProjRcd, E-Proj, E-Rcd
-- Pairs: E-PairBeta1, E-PairBeta2, E-Proj1, E-Proj2, E-Pair1, E-Pair2
-- Sums: E-CaseInl, E-CaseInr, E-Case, E-Inl, E-Inr
--}
+-- Records: E-ProjRcd, E-Proj, E-Rcd
+oneStep (TmProj (TmRecord fields) label) = case lookup label fields of
+  Just value -> StepOk value
+  Nothing -> StepError ("Label " ++ label ++ " not found")
+oneStep (TmProj t label) = case oneStep t of
+  StepOk t' -> StepOk (TmProj t' label)
+  err -> err
+oneStep (TmRecord fields) = 
+  let stepOneField ((l, v):rest) = if isVal v
+                                    then case stepOneField rest of
+                                           Just (rest', changed) -> Just ((l, v):rest', changed)
+                                           Nothing -> Nothing
+                                    else case oneStep v of
+                                           StepOk v' -> Just ((l, v'):rest, True)
+                                           err -> Nothing
+      stepOneField [] = Nothing
+  in case stepOneField fields of
+       Just (fields', True) -> StepOk (TmRecord fields')
+       _ -> StepError ("Cannot step record: " ++ show (TmRecord fields))
+
+-- Pairs: E-PairBeta1, E-PairBeta2, E-Proj1, E-Proj2, E-Pair1, E-Pair2
+oneStep (TmFst (TmPair v1 v2)) | isVal v1 && isVal v2 = StepOk v1
+oneStep (TmFst t) = case oneStep t of
+  StepOk t' -> StepOk (TmFst t')
+  err -> err
+oneStep (TmSnd (TmPair v1 v2)) | isVal v1 && isVal v2 = StepOk v2
+oneStep (TmSnd t) = case oneStep t of
+  StepOk t' -> StepOk (TmSnd t')
+  err -> err
+oneStep (TmPair v1 t2) | isVal v1 = case oneStep t2 of
+  StepOk t2' -> StepOk (TmPair v1 t2')
+  err -> err
+oneStep (TmPair t1 t2) = case oneStep t1 of
+  StepOk t1' -> StepOk (TmPair t1' t2)
+  err -> err
+
+-- Sums: E-CaseInl, E-CaseInr, E-Case, E-Inl, E-Inr
+oneStep (TmMatch (TmInl v _) t1 t2) | isVal v = StepOk (shifting (-1) 0 (subst 0 (shifting 1 0 v) t1))
+oneStep (TmMatch (TmInr v _) t1 t2) | isVal v = StepOk (shifting (-1) 0 (subst 0 (shifting 1 0 v) t2))
+oneStep (TmMatch t t1 t2) = case oneStep t of
+  StepOk t' -> StepOk (TmMatch t' t1 t2)
+  err -> err
+oneStep (TmInl t ty) = case oneStep t of
+  StepOk t' -> StepOk (TmInl t' ty)
+  err -> err
+oneStep (TmInr t ty) = case oneStep t of
+  StepOk t' -> StepOk (TmInr t' ty)
+  err -> err
 
 oneStep t = StepError ("No applicable evaluation rule for: " ++ show t)
 
