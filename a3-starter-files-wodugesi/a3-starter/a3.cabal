@@ -1,0 +1,45 @@
+cabal-version:      3.0
+name:               a3
+version:            0.1.0.0
+build-type:         Simple
+
+common warnings
+    ghc-options: -Wall
+
+library
+  exposed-modules:
+      DeBruijn
+      SmallStep
+      Term
+      Type
+      TypeCheck
+  hs-source-dirs:
+      .
+  build-depends:    containers >=0.6.4.1,
+                    base >=4.15.1.0,
+                    mtl
+  default-language: Haskell2010
+
+test-suite typecheck-test
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          TypeCheckTests.hs
+    build-depends:    base >=4.15.1.0,
+                      a3,
+                      tasty >=1.4.2.3,
+                      tasty-hunit >=0.10.0.3,
+                      tasty-quickcheck >=0.10.2,
+    hs-source-dirs:   test
+    default-language: Haskell2010
+
+test-suite eval-test
+    import:           warnings
+    type:             exitcode-stdio-1.0
+    main-is:          SmallStepTests.hs
+    build-depends:    base >=4.15.1.0,
+                      a3,
+                      tasty >=1.4.2.3,
+                      tasty-hunit >=0.10.0.3,
+                      tasty-quickcheck >=0.10.2,
+    hs-source-dirs:   test
+    default-language: Haskell2010

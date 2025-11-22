@@ -1,0 +1,139 @@
+\ProvidesPackage{csc}
+
+\usepackage{fullpage, bookmark, fancyhdr, changepage}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, amsfonts, amssymb, amscd, mathrsfs}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumerate, enumitem}
+\usepackage{graphicx, tikz-cd, forest}
+\usepackage{hyperref, setspace, listings, adjustbox}
+\usepackage[T1]{fontenc}
+\usepackage[nomath]{lmodern}
+\usepackage{textgreek}
+\usepackage[normalem]{ulem}
+\usepackage{wrapfig, subcaption}
+\usepackage[super]{nth}
+\usepackage{labelschanged}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{mathpartir}
+
+\usepackage{tabularx}
+
+\newcommand{\ds}{\displaystyle}
+\newcommand{\ttab}{\phantom{\texttt{tt}}}
+\newcommand{\tab}{\hspace{1cm}}
+\newcommand{\htab}{\hspace{0.5cm}}
+\newcommand{\qtab}{\hspace{0.25cm}}
+\newcommand{\nl}[1]{\\[#1\baselineskip]}
+
+\newcommand{\clr}[2]{\color{#1}#2\color{black}}
+\newcommand{\ul}{\uline}
+\newcommand{\ol}{\overline}
+\newcommand{\lf}{\left}
+\newcommand{\rt}{\right}
+
+\newcommand{\st}{\ \big|\ }
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\renewcommand{\P}{\mathbb{P}}
+\renewcommand{\cal}{\mathcal}
+\newcommand{\ang}[1]{\langle#1\rangle}
+\newcommand{\nil}{\textsc{Nil}}
+
+\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator{\Id}{Id}
+\let\Re\relax
+\DeclareMathOperator{\Re}{Re}
+\let\Im\relax
+\DeclareMathOperator{\Im}{Im}
+\let\oldhash\#%
+\DeclareRobustCommand{\#}{\adjustbox{valign=B,totalheight=.57\baselineskip}{\oldhash}}
+
+\renewcommand{\thesection}{Part \arabic{section}: \hspace{-1em}}
+\renewcommand{\thesubsection}{(\alph{subsection})}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{cor}{Corollary}
+\newtheorem*{cor*}{Corollary}
+\newtheorem{claim}{Claim}
+\newtheorem*{claim*}{Claim}
+\newtheorem{lemma}{Lemma}
+\newtheorem*{lemma*}{Lemma}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Defn}
+\newtheorem*{defn*}{Defn}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  linkbordercolor={0 0 1}
+}
+ 
+\setlength{\footskip}{6em}
+\usepackage{indentfirst}
+
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
+
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{darkgreen}{rgb}{0,0.3,0}
+\definecolor{darkpink}{rgb}{0.4,0,0.3}
+\definecolor{graygreen}{rgb}{0.3,0.5,0.3}
+\definecolor{grayblue}{rgb}{0.2,0.2,0.6}
+\definecolor{grayred}{rgb}{0.5,0.2,0.2}
+
+\lstset{
+  backgroundcolor=\color{white},     % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}; should come as last argument
+  % identifierstyle=\color{red},
+  basicstyle=\normalsize\ttfamily,      % the size of the fonts that are used for the code
+  breakatwhitespace=false,              % sets if automatic breaks should only happen at whitespace
+  breaklines=false,                     % sets automatic line breaking
+  captionpos=b,                         % sets the caption-position to bottom
+  abovecaptionskip=-3 mm,
+  commentstyle=\itshape\color{graygreen}, % comment style
+  % escapeinside={(:}{:)},             % if you want to add LaTeX within your code
+  escapechar={!},
+  % extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  % firstnumber=1000,                % start line enumeration with line 1000
+  % frame=tb,                        % adds a frame around the code
+  % keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{darkblue},     % keyword style
+  language=Haskell,                  % the language of the code
+  morekeywords={ Set, Tree, Leaf, Node, Applicative, fmap, liftA2, bimap, foldMap
+               , traverse, mappend, pure, Foldable, Traversable, zero, one
+               , Semiring, Semigroup, NonEmpty, sconcat, TSet,
+               , SimplicialSet, TSimplicialSet, Graph, TGraph, LGraph
+               , Map, IsString, fromString },
+  deletekeywords={instance, data, where, class, filter, type, insert, delete, union, map},      % if you want to delete keywords from the given language
+  emph={data, class, instance, where, type},
+  emphstyle=\color{darkpink},
+  numbers=none,                      % where to put the line-numbers; possible values are (none, left, right)
+  literate=*{lam}{{$\lambda$}}1  {->}{{$\rightarrow$}}1 % {\\}{{$\lambda$}}1 
+  {|->}{{$\mapsto$}}1 {o+o}{{$\oplus$}}1 {=>}{{$\Rightarrow$}}1
+  {/\\}{{$\Lambda$}}1  {'\{}{'\{}1 {\\/}{{$\forall$}}1 %
+  ,
+  % numbersep=5pt,                   % how far the line-numbers are from the code
+  % numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  % rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  % showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  % showstringspaces=false,          % underline spaces within strings only
+  % showtabs=false,                  % show tabs within strings adding particular underscores
+  % stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{grayred},     % string literal style
+  % tabsize=2,                       % sets default tabsize to 2 spaces
+  % title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+  xleftmargin=10pt,
+  aboveskip=8pt,
+  belowskip=4pt
+}
+
+\newcommand{\code}[1]{\lstinline[mathescape]|#1|}
+\newcommand{\hcode}[1]{{\color{darkblue} \lstinline[keywordstyle={}]|#1|}} % h for "highlighted"
+\newcommand{\hfcode}[1]{{\color{darkblue} \lstinline[keywordstyle={},basicstyle=\footnotesize\ttfamily]|#1|}} % h for "highlighted"
