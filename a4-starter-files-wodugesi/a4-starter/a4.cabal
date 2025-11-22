@@ -1,0 +1,57 @@
+cabal-version:      3.0
+name:               a4
+version:            0.1.0.0
+build-type:         Simple
+
+common warnings
+    ghc-options: -Wall -Wno-unused-imports -Wno-noncanonical-monad-instances
+
+library part1
+  import:           warnings
+  exposed-modules:
+      Imperative
+  hs-source-dirs:
+      .
+  build-depends:    containers >=0.6.4.1,
+                    base >=4.15.1.0,
+                    mtl
+  default-language: Haskell2010
+
+library part2and3
+  import:           warnings
+  exposed-modules:
+      Term
+      Type
+      TypeCheck
+      Unify
+      Infer
+      InferMonad
+  hs-source-dirs:
+      .
+  build-depends:    containers >=0.6.4.1,
+                    base >=4.15.1.0,
+                    mtl
+  default-language: Haskell2010
+
+test-suite part1-test
+    type:             exitcode-stdio-1.0
+    main-is:          Part1Tests.hs
+    build-depends:    base >=4.15.1.0,
+                      part1,
+                      tasty >=1.4.2.3,
+                      tasty-hunit >=0.10.0.3,
+                      tasty-quickcheck >=0.10.2,
+                      containers >=0.6.4.1,
+    hs-source-dirs:   test
+    default-language: Haskell2010
+
+test-suite part2and3-test
+    type:             exitcode-stdio-1.0
+    main-is:          Part2And3Tests.hs
+    build-depends:    base >=4.15.1.0,
+                      part2and3,
+                      tasty >=1.4.2.3,
+                      tasty-hunit >=0.10.0.3,
+                      containers >=0.6.4.1,
+    hs-source-dirs:   test
+    default-language: Haskell2010
