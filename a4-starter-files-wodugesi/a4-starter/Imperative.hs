@@ -96,37 +96,81 @@ lookupCtx i ctx = fromJust (lookup i ctx)
 --------------------------------------------------------}
 
 lit :: Int -> Value
-lit = error "TODO"
+lit n = Lit n
 
 var :: Int -> State Ctx Value
-var = error "TODO"
+var n = do
+  ctx <- get
+  let idx = length ctx
+  put (ctx ++ [(idx, n)])
+  return (Var idx)
 
 {--------------------------------------------------------
 (b) Define `def`
 --------------------------------------------------------}
 
 def :: State Ctx Value -> Int
-def = error "TODO"
+def prog =
+  let (val, ctx) = runState prog []
+  in case val of
+       Lit n -> n
+       Var idx -> lookupCtx idx ctx
 
 {--------------------------------------------------------
 (c) Define `+=`, `-=`, and `*=`
 --------------------------------------------------------}
 
 (+=) :: Value -> Value -> State Ctx ()
-(+=) = error "TODO"
+(+=) (Lit _) _ = return ()
+(+=) (Var idx) v2 = do
+  ctx <- get
+  let val1 = lookupCtx idx ctx
+  val2 <- case v2 of
+            Lit n -> return n
+            Var i -> return (lookupCtx i ctx)
+  let newVal = val1 + val2
+  let newCtx = [(i, if i == idx then newVal else v) | (i, v) <- ctx]
+  put newCtx
 
 (-=) :: Value -> Value -> State Ctx ()
-(-=) = error "TODO"
+(-=) (Lit _) _ = return ()
+(-=) (Var idx) v2 = do
+  ctx <- get
+  let val1 = lookupCtx idx ctx
+  val2 <- case v2 of
+            Lit n -> return n
+            Var i -> return (lookupCtx i ctx)
+  let newVal = val1 - val2
+  let newCtx = [(i, if i == idx then newVal else v) | (i, v) <- ctx]
+  put newCtx
 
 (*=) :: Value -> Value -> State Ctx ()
-(*=) = error "TODO"
+(*=) (Lit _) _ = return ()
+(*=) (Var idx) v2 = do
+  ctx <- get
+  let val1 = lookupCtx idx ctx
+  val2 <- case v2 of
+            Lit n -> return n
+            Var i -> return (lookupCtx i ctx)
+  let newVal = val1 * val2
+  let newCtx = [(i, if i == idx then newVal else v) | (i, v) <- ctx]
+  put newCtx
 
 {--------------------------------------------------------
 (d) Define `while`
 --------------------------------------------------------}
 
 while :: Value -> (Int -> Bool) -> State Ctx () -> State Ctx ()
-while = error "TODO"
+while cond pred body = do
+  ctx <- get
+  val <- case cond of
+           Lit n -> return n
+           Var idx -> return (lookupCtx idx ctx)
+  if pred val
+    then do
+      body
+      while cond pred body
+    else return ()
 
 {--------------------------------------------------------
 (e) Correctness of Imperative Style Code

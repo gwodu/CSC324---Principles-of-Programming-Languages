@@ -8,7 +8,20 @@ import Type
 --------------------------------------------------------}
 
 (<:) :: Type -> Type -> Bool
-(<:) = error "TODO"
+s <: TyTop = True
+s <: t
+  | s == t = True
+  | otherwise = case (s, t) of
+      (TyArrow s1 s2, TyArrow t1 t2) -> t1 <: s1 && s2 <: t2
+      (TyRecord fs1, TyRecord fs2) ->
+        all (\(l2, t2) ->
+          case lookup l2 fs1 of
+            Nothing -> False
+            Just s2 -> s2 <: t2
+        ) fs2
+      (TyProd s1 s2, TyProd t1 t2) -> s1 <: t1 && s2 <: t2
+      (TySum s1 s2, TySum t1 t2) -> s1 <: t1 && s2 <: t2
+      _ -> False
 
 {--------------------------------------------------------
   Type checking
@@ -80,7 +93,7 @@ typeCheck ctx (TmApp t1 t2) =
   case typeCheck ctx t1 of
     TcOk (TyArrow ty11 ty12) ->
       case typeCheck ctx t2 of
-        TcOk ty2 | ty2 == ty11 -> TcOk ty12
+        TcOk ty2 | ty2 <: ty11 -> TcOk ty12
         TcOk ty2 -> TcError $ "Application requires the argument to be " ++ show ty11 ++ ", but got " ++ show ty2
         err -> err
     TcOk ty -> TcError $ "Application requires a function, but got " ++ show ty
@@ -118,7 +131,7 @@ typeCheck ctx (TmInl t ty) =
   case ty of
     TySum ty1 _ ->
       case typeCheck ctx t of
-        TcOk ty1' | ty1' == ty1 -> TcOk ty
+        TcOk ty1' | ty1' <: ty1 -> TcOk ty
         TcOk ty1' -> TcError $ "inl requires the argument to be " ++ show ty1 ++ ", but got " ++ show ty1'
         err -> err
     _ -> TcError "inl requires a sum type annotation"
@@ -127,7 +140,7 @@ typeCheck ctx (TmInr t ty) =
   case ty of
     TySum _ ty2 ->
       case typeCheck ctx t of
-        TcOk ty2' | ty2' == ty2 -> TcOk ty
+        TcOk ty2' | ty2' <: ty2 -> TcOk ty
         TcOk ty2' -> TcError $ "inr requires the argument to be " ++ show ty2 ++ ", but got " ++ show ty2'
         err -> err
     _ -> TcError "inr requires a sum type annotation"

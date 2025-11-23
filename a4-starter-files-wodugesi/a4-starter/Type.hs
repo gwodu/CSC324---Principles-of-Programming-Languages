@@ -36,14 +36,32 @@ emptySubst :: Subst
 emptySubst = Subst empty
 
 substType :: Subst -> Type -> Type
-substType s ty = error "TODO"
+substType s@(Subst m) ty = case ty of
+  TyBool -> TyBool
+  TyNat -> TyNat
+  TyTop -> TyTop
+  TyArrow t1 t2 -> TyArrow (substType s t1) (substType s t2)
+  TyVar v -> case lookup v m of
+               Just t -> t
+               Nothing -> TyVar v
+  TyRecord fields -> TyRecord [(l, substType s t) | (l, t) <- fields]
+  TyProd t1 t2 -> TyProd (substType s t1) (substType s t2)
+  TySum t1 t2 -> TySum (substType s t1) (substType s t2)
 
 composeSubst :: Subst -> Subst -> Subst
-composeSubst s1 s2 = error "TODO"
+composeSubst s1@(Subst m1) (Subst m2) =
+  Subst (map (substType s1) m2 `union` m1)
 
 {------------------------------------------------------
   Free type variables
 ------------------------------------------------------}
 
 ftv :: Type -> [TypeVar]
-ftv ty = error "TODO"
+ftv TyBool = []
+ftv TyNat = []
+ftv TyTop = []
+ftv (TyVar v) = [v]
+ftv (TyArrow t1 t2) = ftv t1 ++ ftv t2
+ftv (TyRecord fields) = concatMap (ftv . snd) fields
+ftv (TyProd t1 t2) = ftv t1 ++ ftv t2
+ftv (TySum t1 t2) = ftv t1 ++ ftv t2

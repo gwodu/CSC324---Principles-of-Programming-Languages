@@ -26,14 +26,20 @@ data InferResult a
 
 instance Functor InferM where
   fmap :: (a -> b) -> InferM a -> InferM b
-  fmap = error "TODO"
+  fmap f (InferM m) = InferM $ \s ->
+    case m s of
+      InferOk a s' -> InferOk (f a) s'
+      InferError err -> InferError err
 
 instance Monad InferM where
   return :: a -> InferM a
-  return = error "TODO"
+  return a = InferM $ \s -> InferOk a s
 
   (>>=) :: InferM a -> (a -> InferM b) -> InferM b
-  (>>=) = error "TODO"
+  (InferM m) >>= f = InferM $ \s ->
+    case m s of
+      InferOk a s' -> let InferM m' = f a in m' s'
+      InferError err -> InferError err
 
 runInferM :: InferM a -> InferResult a
 runInferM (InferM m) = m initialFreshId
@@ -41,7 +47,7 @@ runInferM (InferM m) = m initialFreshId
     initialFreshId = 0
 
 freshId :: InferM FreshId
-freshId = error "TODO"
+freshId = InferM $ \s -> InferOk s (s + 1)
 
 freshTypeVar :: InferM TypeVar
 freshTypeVar = TypeVar <$> freshId
